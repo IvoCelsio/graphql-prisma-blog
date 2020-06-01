@@ -1,77 +1,30 @@
-import { GraphQLServer } from 'graphql-yoga'
+import { GraphQLServer, PubSub } from 'graphql-yoga';
+import db from './db';
+import Query from './resolvers/Query';
+import Mutation from './resolvers/Mutation';
+import Subscription from './resolvers/Subscription';
+import User from './resolvers/User';
+import Post from './resolvers/Post';
+import Comment from './resolvers/Comment';
 
-// Scalar types - String, Boolean, Int, Float, ID
-
-// Type definitions (schema)
-const typeDefs = `
-    type Query {
-        greeting(name: String, position: String): String!
-        add(numbers: [Float!]!): Float!
-        grades: [Int!]!
-        me: User!
-        post: Post!
-    }
-
-    type User {
-        id: ID!
-        name: String!
-        email: String!
-        age: Int
-    }
-
-    type Post {
-        id: ID!
-        title: String!
-        body: String!
-        published: Boolean!
-    }
-`
-
-// Resolvers
-const resolvers = {
-    Query: {
-        greeting(parent, args, ctx, info) {
-            if (args.name && args.position) {
-                return `Hello, ${args.name}! You are my favoriate ${args.position}.`
-            } else {
-                return 'Hello!'
-            }
-        },
-        add(parent, args, ctx, info) {
-            if (args.numbers.length === 0) {
-                return 0
-            }
-
-            return args.numbers.reduce((accumulator, currentValue) => {
-                return accumulator + currentValue
-            })
-        },
-        grades(parent, args, ctx, info) {
-            return [99, 80, 93]
-        },
-        me() {
-            return {
-                id: '123098',
-                name: 'Mike',
-                email: 'mike@example.com'
-            }
-        },
-        post() {
-            return {
-                id: '092',
-                title: 'GraphQL 101',
-                body: '',
-                published: false
-            }
-        }
-    }
-}
+const pubsub = new PubSub();
 
 const server = new GraphQLServer({
-    typeDefs,
-    resolvers
-})
+    typeDefs: './src/schema.graphql',
+    resolvers: {
+        Query,
+        Mutation,
+        Subscription,
+        User,
+        Post,
+        Comment
+    },
+    context: {
+        db,
+        pubsub
+    }
+});
 
 server.start(() => {
-    console.log('The server is up!')
-})
+    console.log('The server started on Port: 4000!');
+});
