@@ -70,3 +70,5 @@ const updatePostForUser = async (postId, data) => {
 
     return post.author;
 };
+
+export { prisma as default };
